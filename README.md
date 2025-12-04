@@ -1,84 +1,62 @@
-# Adiabatic Quantum Computing: Maximum Independent Set (MIS)
+# Quantum Computing Practice 1: Modeling and Visualization of Quantum Noise Channels
 
-This repository contains the code and analysis for Practice 1 of the Quantum Computing course. The project serves as an introduction to the D-Wave Ocean SDK and focuses on solving the Maximum Independent Set (MIS) problem using both classical solvers and hybrid quantum approaches.
+This repository contains the code and analysis developed for **Practice 1** of the Quantum Computing Laboratory. The project focuses on the simulation and analysis of the impact of different **Quantum Noise Channels** on a single qubit state, utilizing the density matrix representation and visualization on the Bloch Sphere.
 
 ## Objective
 
-The main objective of this practice is to understand how to map graph theory problems into a format compatible with quantum annealers. Specifically:
+The main goal of this practice is to understand and simulate the effects of decoherence and noise within a single-qubit quantum system. The key objectives are:
 
-1.  Understand the Maximum Independent Set (MIS) problem.
-2.  Model the problem as a QUBO (Quadratic Unconstrained Binary Optimization).
-3.  Use the `networkx` library for graph generation and visualization.
-4.  Solve the problem using different samplers provided by D-Wave (`ExactSolver`, `SimulatedAnnealing`, and `LeapHybridSampler`).
+1.  Model the state of a qubit using the **Density Matrix** formalism ($\rho$).
+2.  Implement and apply the operators for the principal **Quantum Noise Channels**.
+3.  Geometrically visualize the evolution of quantum states under noise using the **Bloch Sphere**.
+4.  Analyze the contraction of the Bloch sphere vector as a measure of state purity loss.
 
 ## Theoretical Background
 
-### The Maximum Independent Set Problem
-Given a graph G = (V, E), an independent set is a set of vertices in the graph such that no two vertices in the set are adjacent (connected by an edge). The goal of the Maximum Independent Set problem is to find the independent set with the largest possible number of vertices.
+Noise is the primary obstacle to large-scale quantum computation (NISQ era). It is modeled by **Quantum Channels**, which describe how interaction with the environment degrades a pure state into a mixed state.
 
-### QUBO Formulation
-To solve this using adiabatic quantum computing, the problem is formulated as an energy minimization problem.
+The effect of a quantum channel $\mathcal{E}$ on a density matrix $\rho$ is given by the Kraus operators $K_i$:
+$$\mathcal{E}(\rho) = \sum_i K_i \rho K_i^{\dagger}$$
 
-The objective is to maximize the number of selected nodes while penalizing the selection of two connected nodes. In QUBO format (minimization), this is expressed as:
+### Simulated Quantum Channels
 
-H(x) = -A * sum(x_i) + B * sum(x_i * x_j for (i, j) in E)
+The notebook analyzes three fundamental channels in detail:
 
-Where:
-* x_i is a binary variable (1 if node i is selected, 0 otherwise).
-* The first term (-A) incentivizes including nodes in the set (since we want to maximize size, we minimize the negative sum).
-* The second term (+B) applies a large penalty if two connected nodes are selected simultaneously (violating the independence constraint).
-* B must be greater than A to ensure valid solutions are preferred over larger but invalid sets.
+1.  **Bit-Flip Channel (X-error):**
+    * Introduces a bit inversion error (Pauli X operation) with probability $p$.
+    * Primarily affects coherence along the Y and Z axes, contracting the Bloch vector towards the X-axis.
+
+2.  **Phase-Flip Channel (Z-error):**
+    * Introduces a phase error (Pauli Z operation) with probability $p$.
+    * Primarily affects coherence along the X and Y axes, contracting the Bloch vector towards the Z-axis.
+
+3.  **Depolarizing Channel:**
+    * Mixes the qubit state uniformly with the maximally mixed state ($I/2$).
+    * Results in an isotropic (uniform in all directions) contraction of the Bloch vector toward the origin.
+
+### Geometric Interpretation
+
+On the Bloch Sphere, the **amount of noise** is visualized as a contraction of the state vector ($\vec{r}$) toward the center. The length of the vector $|\vec{r}|$ is directly related to the **purity** of the state: the closer the vector endpoint is to the origin, the more mixed and noisy the state.
 
 ## Project Structure
 
-The notebook `PR1GustavoGarciaIgnacioLopez.ipynb` covers the following steps:
+The notebook `PR1GustavoGarciaIgnacioLopez.ipynb` is organized into the following logical sections:
 
-### 1. Graph Generation
-* Creation of random graphs using the `networkx` library (e.g., Erdos-Renyi model).
-* Visualization of the graph structure to understand the node connections.
-
-### 2. Classical Exact Solution
-* Usage of `dimod.ExactSolver`.
-* This solver explores all possible states (brute force) to find the global optimum.
-* It is used as a baseline for correctness but is limited to very small graphs due to exponential time complexity.
-
-### 3. Heuristic Solution (Simulated Annealing)
-* Usage of `dwave-neal.SimulatedAnnealingSampler`.
-* A classical probabilistic technique that mimics the annealing process to find global optima in a large search space.
-* Allows solving larger graphs than the exact solver.
-
-### 4. Hybrid Quantum Solution
-* Usage of `dwave.system.LeapHybridSampler`.
-* Utilizes D-Wave's cloud hybrid solvers, which combine classical computation with quantum annealing to handle larger and more complex problem instances efficiently.
+1.  **Classical Noise Introduction:** Initial definitions and basic modeling concepts.
+2.  **Channel Implementation:** Python code to implement and apply the mathematical operations for the Bit-Flip, Phase-Flip, and Depolarizing channels.
+3.  **Bloch Sphere Visualization:** Generation of 3D plots illustrating the trajectory of an initial state (e.g., $|+\rangle$) as the error probability ($p$) increases.
+4.  **Analysis and Conclusions:** Discussion on the differing nature and impact of each noise type on the geometry of the quantum state.
 
 ## Requirements and Installation
 
-This project relies on Python and the D-Wave Ocean software stack.
+This project relies on Python and standard libraries for numerical analysis and visualization. The use of Qiskit's utilities for quantum states is strongly recommended (or similar libraries like QuTiP).
 
 ### Prerequisites
 * Python 3.8+
 * Jupyter Notebook
 
-### Installation
-Execute the following command to install the required dependencies:
+### Installation of Dependencies
+Execute the following command to install the required libraries (assuming usage of a quantum framework like Qiskit, NumPy, and Matplotlib):
 
-pip install numpy matplotlib networkx dimod dwave-system dwave-ocean-sdk
-
-## Usage
-
-1.  Clone this repository.
-2.  Ensure you have a valid API token configured for the D-Wave Leap cloud service if running the hybrid sampler sections.
-3.  Open the notebook:
-    jupyter notebook PR1GustavoGarciaIgnacioLopez.ipynb
-4.  Execute the cells to generate graphs and run the different optimization algorithms.
-
-## Key Results
-
-* **Formulation:** Successfully mapped the graph problem to a Binary Quadratic Model (BQM).
-* **Verification:** The solutions returned by the solvers were verified to ensure that no two nodes in the result set shared an edge.
-* **Performance:** Comparison between the execution time and feasibility of exact methods versus heuristic and hybrid methods on different graph sizes.
-
-## Authors
-
-* Gustavo Garcia
-* Ignacio Lopez
+```bash
+pip install numpy matplotlib qiskit
